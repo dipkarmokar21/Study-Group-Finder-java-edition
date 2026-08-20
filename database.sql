@@ -1,13 +1,6 @@
--- ==============================================================================
--- STUDY GROUP FINDER - COMPLETE DATABASE SCHEMA & SCRIPT
--- For University DBMS Lab demonstration using MySQL / XAMPP (phpMyAdmin)
--- ==============================================================================
 
--- 1. Create and select Database
 CREATE DATABASE IF NOT EXISTS `study_group_db`;
 USE `study_group_db`;
-
--- Drop existing tables/procedures/triggers in correct foreign key order if re-running
 DROP TRIGGER IF EXISTS `trg_after_member_insert`;
 DROP TRIGGER IF EXISTS `trg_after_member_delete`;
 DROP PROCEDURE IF EXISTS `GetGroupsBySubject`;
@@ -16,11 +9,6 @@ DROP TABLE IF EXISTS `schedules`;
 DROP TABLE IF EXISTS `study_groups`;
 DROP TABLE IF EXISTS `users`;
 
--- ==============================================================================
--- TABLE 1: users
--- Represents student users in the application
--- Demonstrates: Primary Key, Auto Increment, Unique Constraint, Default Timestamp
--- ==============================================================================
 CREATE TABLE `users` (
     `user_id` INT AUTO_INCREMENT PRIMARY KEY,
     `full_name` VARCHAR(100) NOT NULL,
@@ -29,11 +17,7 @@ CREATE TABLE `users` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ==============================================================================
--- TABLE 2: study_groups
--- Represents study groups created by users
--- Demonstrates: Primary Key, Foreign Key (1-to-Many: User -> Study Groups), Check/Enum
--- ==============================================================================
+
 CREATE TABLE `study_groups` (
     `group_id` INT AUTO_INCREMENT PRIMARY KEY,
     `owner_id` INT NOT NULL,
@@ -47,11 +31,6 @@ CREATE TABLE `study_groups` (
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- ==============================================================================
--- TABLE 3: schedules
--- Represents the meeting day and time for each group
--- Demonstrates: 1-to-1 Relationship with study_groups via UNIQUE constraint on FK
--- ==============================================================================
 CREATE TABLE `schedules` (
     `schedule_id` INT AUTO_INCREMENT PRIMARY KEY,
     `group_id` INT NOT NULL UNIQUE,
@@ -62,11 +41,6 @@ CREATE TABLE `schedules` (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ;
 
--- ==============================================================================
--- TABLE 4: group_members
--- Junction table for students joining study groups
--- Demonstrates: Many-to-Many Relationship, Composite Primary Key, Foreign Keys
--- ==============================================================================
 CREATE TABLE `group_members` (
     `group_id` INT NOT NULL,
     `user_id` INT NOT NULL,
@@ -80,10 +54,6 @@ CREATE TABLE `group_members` (
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- ==============================================================================
--- TRIGGER 1: trg_after_member_insert
--- Automatically marks group status as 'FULL' when total members reach max_members
--- ==============================================================================
 DELIMITER $$
 CREATE TRIGGER `trg_after_member_insert`
 AFTER INSERT ON `group_members`
@@ -92,17 +62,16 @@ BEGIN
     DECLARE member_count INT;
     DECLARE allowed_max INT;
 
-    -- Calculate current member count for this group
+
     SELECT COUNT(*) INTO member_count 
     FROM `group_members` 
     WHERE `group_id` = NEW.group_id;
 
-    -- Fetch maximum members allowed
+
     SELECT `max_members` INTO allowed_max 
     FROM `study_groups` 
     WHERE `group_id` = NEW.group_id;
 
-    -- If capacity reached, update status to FULL
     IF member_count >= allowed_max THEN
         UPDATE `study_groups` 
         SET `status` = 'FULL' 
@@ -111,10 +80,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ==============================================================================
--- TRIGGER 2: trg_after_member_delete
--- Automatically resets group status to 'OPEN' if member count drops below max_members
--- ==============================================================================
 DELIMITER $$
 CREATE TRIGGER `trg_after_member_delete`
 AFTER DELETE ON `group_members`
@@ -139,10 +104,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ==============================================================================
--- STORED PROCEDURE: GetGroupsBySubject
--- Fetches study groups with schedules and member counts, filtered by subject name
--- ==============================================================================
 DELIMITER $$
 CREATE PROCEDURE `GetGroupsBySubject`(IN `p_subject` VARCHAR(100))
 BEGIN
@@ -187,13 +148,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ==============================================================================
--- SAMPLE DATA INSERTION
--- Password for all sample users is: password123
--- (Bcrypt hash: $2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm)
--- ==============================================================================
 
--- 1. Insert Sample Users
 INSERT INTO `users` (`user_id`, `full_name`, `email`, `password`) VALUES
 (1, 'Alex Rivera', 'alex@university.edu', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm'),
 (2, 'Sarah Chen', 'sarah@university.edu', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm'),
@@ -201,7 +156,7 @@ INSERT INTO `users` (`user_id`, `full_name`, `email`, `password`) VALUES
 (4, 'Emily Watson', 'emily@university.edu', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm'),
 (5, 'Marcus Johnson', 'marcus@university.edu', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm');
 
--- 2. Insert Sample Study Groups (Demonstrating 1-to-Many Users -> Study Groups)
+
 INSERT INTO `study_groups` (`group_id`, `owner_id`, `title`, `subject`, `max_members`, `status`) VALUES
 (1, 1, 'Database Systems Lab & SQL Querying', 'Computer Science', 4, 'OPEN'),
 (2, 2, 'Calculus II & Differential Equations Prep', 'Mathematics', 4, 'OPEN'),
@@ -209,7 +164,7 @@ INSERT INTO `study_groups` (`group_id`, `owner_id`, `title`, `subject`, `max_mem
 (4, 4, 'Organic Chemistry Reaction Mechanisms', 'Chemistry', 5, 'OPEN'),
 (5, 5, 'Classical Mechanics & Physics Problem Solving', 'Physics', 3, 'OPEN');
 
--- 3. Insert Schedules (Demonstrating 1-to-1 Study Groups -> Schedules)
+
 INSERT INTO `schedules` (`schedule_id`, `group_id`, `meeting_day`, `meeting_time`) VALUES
 (1, 1, 'Monday & Wednesday', '04:00 PM - 06:00 PM'),
 (2, 2, 'Tuesday & Thursday', '05:30 PM - 07:00 PM'),
@@ -217,8 +172,7 @@ INSERT INTO `schedules` (`schedule_id`, `group_id`, `meeting_day`, `meeting_time
 (4, 4, 'Saturday', '10:00 AM - 12:30 PM'),
 (5, 5, 'Sunday', '03:00 PM - 05:00 PM');
 
--- 4. Insert Group Members (Demonstrating Many-to-Many via Junction Table)
--- Note: Group 3 has max_members = 2. When user 3 and user 1 join, trigger will fire!
+
 INSERT INTO `group_members` (`group_id`, `user_id`) VALUES
 (1, 1), -- Alex (owner) in Group 1
 (1, 2), -- Sarah joined Group 1
