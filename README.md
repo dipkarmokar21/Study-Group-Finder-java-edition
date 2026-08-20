@@ -20,17 +20,17 @@ A desktop application built with **Java Swing** and **MySQL** that helps univers
 
 ## 🏗️ Project Structure
 
-```
+```text
 Study Group Finder/
 ├── src/
 │   ├── Launcher.java              # Entry point
-│   ├── backend/                    # Database layer (DAO classes)
+│   ├── backend/                   # Database layer (DAO classes)
 │   │   ├── DBConnection.java      # MySQL connection + auto-init triggers/procedures
 │   │   ├── UserDAO.java           # Login, Register, User queries
 │   │   ├── StudyGroupDAO.java     # Group CRUD, stats, stored procedure calls
 │   │   ├── GroupMemberDAO.java    # Join, Leave, Member listing
-│   │   └── ScheduleDAO.java      # Meeting schedule queries
-│   └── frontend/                   # UI layer (Swing panels)
+│   │   └── ScheduleDAO.java       # Meeting schedule queries
+│   └── frontend/                  # UI layer (Swing panels)
 │       ├── UIUtils.java           # Shared colors, fonts, components
 │       ├── MainApp.java           # Navigation manager (CardLayout)
 │       ├── LoginPanel.java        # Login screen
@@ -50,46 +50,40 @@ Study Group Finder/
 
 ## 📖 Key Concepts Explained
 
-### JDBC কী?
+### What is JDBC?
+**JDBC (Java Database Connectivity)** is a Java API used to connect and execute queries with the database (MySQL, PostgreSQL, etc.).
 
-**JDBC (Java Database Connectivity)** হলো Java এর একটা API যেটা দিয়ে Java প্রোগ্রাম থেকে MySQL, PostgreSQL ইত্যাদি ডেটাবেসে কানেক্ট করে SQL query চালানো যায়।
+In this project, JDBC is used for:
+- `Connection` → Connecting to the database
+- `PreparedStatement` → Executing SQL queries securely (prevents SQL injection)
+- `CallableStatement` → Calling Stored Procedures
+- `ResultSet` → Reading the results of a query
 
-এই প্রজেক্টে আমরা JDBC ব্যবহার করে:
-- `Connection` → ডেটাবেসে কানেক্ট হওয়া
-- `PreparedStatement` → SQL query চালানো (safe from SQL injection)
-- `CallableStatement` → Stored Procedure কল করা
-- `ResultSet` → Query এর রেজাল্ট পড়া
+To use JDBC, a **Driver** is required. For MySQL, we use the `mysql-connector-j-8.0.33.jar` file.
 
-JDBC ব্যবহার করতে হলে একটা **Driver** লাগে। MySQL এর জন্য সেটা হলো `mysql-connector-j-8.0.33.jar` ফাইলটি।
+### What is DAO?
+**DAO (Data Access Object)** is a design pattern used to separate data access logic from the rest of the application. It keeps the UI code clean and modular.
 
-### DAO কী?
+DAO classes in this project:
+- `UserDAO.java`: Handles user login and registration
+- `StudyGroupDAO.java`: Handles group creation, deletion, search, and dashboard statistics
+- `GroupMemberDAO.java`: Manages users joining and leaving groups, and fetching member lists
+- `ScheduleDAO.java`: Manages meeting schedules
 
-**DAO (Data Access Object)** হলো একটা ডিজাইন প্যাটার্ন। এর মানে হলো ডেটাবেসের সাথে কথা বলার সব কোড আলাদা ক্লাসে রাখা। এতে কোড পরিষ্কার থাকে এবং UI কোড আর ডেটাবেস কোড মিশে যায় না।
+### What is a Stored Procedure?
+A Stored Procedure is a prepared SQL code that you can save and reuse. In this project, `GetGroupsBySubject()` is a Stored Procedure that filters groups based on the subject selected in the UI.
 
-এই প্রজেক্টে আমাদের DAO ক্লাসগুলো হলো:
-
-| DAO Class | কী করে |
-|-----------|--------|
-| `UserDAO.java` | ইউজার লগিন, রেজিস্ট্রেশন |
-| `StudyGroupDAO.java` | গ্রুপ তৈরি, ডিলিট, সার্চ, স্ট্যাটিস্টিকস |
-| `GroupMemberDAO.java` | গ্রুপে জয়েন, লিভ, মেম্বার লিস্ট |
-| `ScheduleDAO.java` | মিটিং শিডিউল |
-
-### Stored Procedure কী?
-
-Stored Procedure হলো ডেটাবেসের ভেতরে সেভ করা একটা SQL ফাংশন। Java থেকে শুধু কল করলেই কাজ হয়ে যায়। এই প্রজেক্টে `GetGroupsBySubject()` নামে একটা Stored Procedure আছে যেটা সাবজেক্ট অনুযায়ী গ্রুপ ফিল্টার করে।
-
-### Trigger কী?
-
-Trigger হলো ডেটাবেসের একটা অটোমেটিক অ্যাকশন যেটা কোনো INSERT/DELETE/UPDATE হলে নিজে থেকে চলে। এই প্রজেক্টে ২টা Trigger আছে:
-- `trg_after_member_insert` → কেউ জয়েন করলে মেম্বার সংখ্যা চেক করে, ম্যাক্সে পৌঁছলে স্ট্যাটাস "FULL" করে দেয়
-- `trg_after_member_delete` → কেউ লিভ করলে স্ট্যাটাস আবার "OPEN" করে দেয়
+### What is a Trigger?
+A Trigger is a set of SQL instructions that automatically execute in response to certain events on a particular table (INSERT, UPDATE, DELETE).
+This project uses 2 Triggers:
+- `trg_after_member_insert` → Automatically updates the group status to "FULL" when the maximum member limit is reached.
+- `trg_after_member_delete` → Automatically resets the group status to "OPEN" when a member leaves.
 
 ---
 
 ## 🗄️ Database Schema
 
-```
+```text
 users ──────────────< study_groups ──────────────< group_members >────────────── users
 (1)          (1:N)        (N)            (N:M)          (N)          (N:M)        (1)
                             │
@@ -131,68 +125,47 @@ users ──────────────< study_groups ─────�
 ### Step 1: Install XAMPP
 
 1. Go to [https://www.apachefriends.org/download.html](https://www.apachefriends.org/download.html)
-2. Download XAMPP for Windows
-3. Install it (default path: `C:\xampp`)
-4. Open **XAMPP Control Panel**
-5. Click **Start** next to **MySQL**
-6. MySQL should now be running on `localhost:3306`
+2. Download XAMPP for Windows and install it.
+3. Open **XAMPP Control Panel**.
+4. Click **Start** next to **MySQL**.
 
 ### Step 2: Create the Database
 
-1. Open your browser and go to **[http://localhost/phpmyadmin](http://localhost/phpmyadmin)**
-2. Click **"New"** on the left sidebar
-3. Type database name: `study_group_db`
-4. Click **"Create"**
-5. Click the **"Import"** tab at the top
-6. Click **"Choose File"** and select the `database.sql` file from this project
-7. Click **"Go"** at the bottom
-8. You should see 4 tables created: `users`, `study_groups`, `schedules`, `group_members`
+1. Open your browser and navigate to **[http://localhost/phpmyadmin](http://localhost/phpmyadmin)**
+2. Click **"New"** on the left sidebar to create a database.
+3. Name the database `study_group_db` and click **"Create"**.
+4. Click the **"Import"** tab at the top.
+5. Click **"Choose File"** and select the `database.sql` file from this project repository.
+6. Click **"Go"** at the bottom.
 
-### Step 3: Download MySQL Connector JAR (JDBC Driver)
+### Step 3: Add the MySQL Connector (JDBC Driver)
 
-This is the bridge between Java and MySQL. Without it, Java cannot talk to MySQL.
+The `mysql-connector-j-8.0.33.jar` file is already included in the `lib/` folder of this repository.
 
-1. Go to [https://dev.mysql.com/downloads/connector/j/](https://dev.mysql.com/downloads/connector/j/)
-2. Select **"Platform Independent"**
-3. Download the **ZIP** file
-4. Extract it — you will find a file named `mysql-connector-j-8.x.x.jar`
-5. Copy this `.jar` file into the `lib/` folder of this project
+1. Open the project in **IntelliJ IDEA**.
+2. Go to **File → Project Structure** (or press `Ctrl + Alt + Shift + S`).
+3. In the left sidebar, click **"Libraries"**.
+4. Click the **"+"** button at the top and select **"Java"**.
+5. Navigate to `lib/mysql-connector-j-8.0.33.jar` inside the project folder.
+6. Click **"OK"**, then **"Apply"** and **"OK"**.
 
-> **Note:** This project already includes the JAR file in the `lib/` folder. If you already have it, skip this step.
+### Step 4: Run the Application
 
-### Step 4: Add the JAR to IntelliJ IDEA
+You can run the application directly from IntelliJ by running the `Launcher.java` file, or via the terminal:
 
-1. Open the project in **IntelliJ IDEA**
-2. Go to **File → Project Structure** (or press `Ctrl + Alt + Shift + S`)
-3. In the left sidebar, click **"Libraries"**
-4. Click the **"+"** button at the top
-5. Select **"Java"**
-6. Navigate to `lib/mysql-connector-j-8.0.33.jar` inside the project folder
-7. Click **"OK"**
-8. Click **"Apply"** → **"OK"**
-
-Now IntelliJ knows how to use the MySQL JDBC driver.
-
-### Step 5: Run the Application
-
-**Option A: From IntelliJ**
-1. Open `src/Launcher.java`
-2. Right-click → **"Run Launcher.main()"**
-
-**Option B: From Terminal**
 ```bash
 cd "Study Group Finder"
 
-# Compile
+# Compile the source code
 javac -cp ".;lib/mysql-connector-j-8.0.33.jar" -d out src/backend/*.java src/frontend/*.java src/Launcher.java
 
-# Run
+# Run the application
 java -cp "out;lib/mysql-connector-j-8.0.33.jar" Launcher
 ```
 
-### Step 6: Login
+### Step 5: Login with Demo Accounts
 
-Use any demo account:
+Use any of the following demo accounts to explore the app:
 
 | Name | Email | Password |
 |------|-------|----------|
@@ -207,10 +180,9 @@ Use any demo account:
 
 | Problem | Solution |
 |---------|----------|
-| `No suitable driver found` | JAR file is not in classpath. Follow Step 4 again. |
-| `Communications link failure` | XAMPP MySQL is not running. Start it from XAMPP Control Panel. |
-| `Unknown database 'study_group_db'` | You haven't created the database yet. Follow Step 2. |
-| `Access denied for user 'root'` | XAMPP default is root with no password. Check `DBConnection.java`. |
+| `No suitable driver found` | JAR file is not in classpath. Ensure you completed Step 3. |
+| `Communications link failure` | XAMPP MySQL is not running. Start it from the XAMPP Control Panel. |
+| `Unknown database 'study_group_db'` | You haven't imported the database yet. Follow Step 2. |
 | Blank screen on launch | Make sure you're running `Launcher.java`, not `MainApp.java`. |
 
 ---
@@ -222,7 +194,6 @@ Use any demo account:
 - **Database:** MySQL 8.0 (via XAMPP)
 - **JDBC Driver:** MySQL Connector/J 8.0.33
 - **IDE:** IntelliJ IDEA
-- **Design:** Custom dark theme with Catppuccin-inspired colors
 
 ---
 
@@ -239,6 +210,3 @@ Use any demo account:
 ## 📄 License
 
 This project is open source and available for educational purposes.
-#   S t u d y - G r o u p - F i n d e r - j a v a - e d i t i o n 
- 
- 
