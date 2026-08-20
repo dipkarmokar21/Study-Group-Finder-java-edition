@@ -174,13 +174,13 @@ INSERT INTO `schedules` (`schedule_id`, `group_id`, `meeting_day`, `meeting_time
 
 
 INSERT INTO `group_members` (`group_id`, `user_id`) VALUES
-(1, 1), -- Alex (owner) in Group 1
-(1, 2), -- Sarah joined Group 1
-(2, 2), -- Sarah (owner) in Group 2
-(2, 3), -- David joined Group 2
-(2, 4), -- Emily joined Group 2
-(3, 3), -- David (owner) in Group 3
-(3, 1), -- Alex joined Group 3 -> Hits max 2, trigger updates status to FULL!
-(4, 4), -- Emily (owner) in Group 4
-(4, 5), -- Marcus joined Group 4
-(5, 5); -- Marcus (owner) in Group 5
+(1, 1), 
+(1, 2), 
+(2, 2), 
+(2, 3), 
+(2, 4), 
+(3, 3),
+(3, 1), 
+(4, 4), 
+(4, 5),
+(5, 5);
