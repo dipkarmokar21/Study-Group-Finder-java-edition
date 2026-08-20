@@ -239,5 +239,6 @@ Use any demo account:
 ## 📄 License
 
 This project is open source and available for educational purposes.
-#   S t u d y - G r o u p - F i n d e r - j a v a - e d i t i o n  
+#   S t u d y - G r o u p - F i n d e r - j a v a - e d i t i o n 
+ 
  
